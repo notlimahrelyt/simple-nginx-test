@@ -46,6 +46,20 @@
 <body onload="alert('Event handler XSS')">
     <h1>Malicious Test Page</h1>
     
+    <div style="border: 2px solid red; padding: 20px; margin: 20px 0; background: #ffeeee;">
+        <h2>Quick Threat Detection Test Links</h2>
+        <ul>
+            <li><a href="/cmd.php?cmd=cat%20/etc/passwd">Command Injection Test</a></li>
+            <li><a href="/include.php?file=../../../etc/passwd">Path Traversal Test</a></li>
+            <li><a href="/user/1' OR '1'='1">SQL Injection Test</a></li>
+            <li><a href="/download/malware.exe">Malware Download Test</a></li>
+            <li><a href="/eicar.com">EICAR Test File</a></li>
+            <li><a href="/backdoor.php?cmd=whoami">PHP Backdoor Test</a></li>
+            <li><a href="/xss-test.html">XSS Dedicated Test Page</a></li>
+            <li><a href="/xss-test.html?xss=<script>alert('Reflected XSS')</script>">Reflected XSS Test</a></li>
+        </ul>
+    </div>
+    
     <!-- Various XSS vectors -->
     <div><script>alert('Inline script XSS')</script></div>
     <img src="x" onerror="alert('Image onerror XSS')">

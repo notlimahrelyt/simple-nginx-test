@@ -8,6 +8,9 @@ services:
       - ./eicar.com:/usr/share/nginx/html/eicar.com
       - ./shellcode.js:/usr/share/nginx/html/shellcode.js
       - ./backdoor.php:/usr/share/nginx/html/backdoor.php
+      - ./cmd.php:/usr/share/nginx/html/cmd.php
+      - ./include.php:/usr/share/nginx/html/include.php
+      - ./xss-test.html:/usr/share/nginx/html/xss-test.html
       - ./sql-injection.js:/usr/share/nginx/html/sql-injection.js
       - ./malware-simulation.js:/usr/share/nginx/html/malware-simulation.js
       - ./command-injection.js:/usr/share/nginx/html/command-injection.js

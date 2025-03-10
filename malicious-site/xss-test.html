@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>XSS Test Page</title>
+</head>
+<body>
+    <h1>XSS Test Page</h1>
+    
+    <p>This page contains multiple XSS vectors that should trigger Palo Alto's threat detection.</p>
+    
+    <div id="basic-xss">
+        <script>alert('Basic XSS Test');</script>
+    </div>
+    
+    <div id="attribute-xss">
+        <img src="x" onerror="alert('XSS via onerror');">
+    </div>
+    
+    <div id="href-xss">
+        <a href="javascript:alert('XSS via href');">Click me</a>
+    </div>
+    
+    <div id="dom-xss">
+        <script>
+            document.write("<img src='x' onerror='alert(\"DOM-based XSS\")'>");
+        </script>
+    </div>
+    
+    <div id="eval-xss">
+        <script>
+            eval('alert("Eval-based XSS")');
+        </script>
+    </div>
+    
+    <div id="encoded-xss">
+        &#x3C;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;&#x3E;&#x61;&#x6C;&#x65;&#x72;&#x74;&#x28;&#x27;&#x45;&#x6E;&#x63;&#x6F;&#x64;&#x65;&#x64;&#x20;&#x58;&#x53;&#x53;&#x27;&#x29;&#x3C;&#x2F;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;&#x3E;
+    </div>
+    
+    <div id="svg-xss">
+        <svg><script>alert('SVG XSS');</script></svg>
+    </div>
+    
+    <div id="css-xss">
+        <style>
+            body {
+                background-image: url('javascript:alert("CSS XSS")');
+            }
+        </style>
+    </div>
+    
+    <div id="iframe-xss">
+        <iframe src="javascript:alert('iframe XSS');"></iframe>
+    </div>
+    
+    <div id="reflected-xss">
+        <script>
+            // Simulate reflected XSS
+            var url = new URL(window.location.href);
+            if (url.searchParams.has('xss')) {
+                document.write(url.searchParams.get('xss'));
+            }
+        </script>
+    </div>
+    
+    <h2>Test Links</h2>
+    <ul>
+        <li><a href="?xss=<script>alert('Reflected XSS')</script>">Trigger Reflected XSS</a></li>
+        <li><a href="?xss=<img src=x onerror=alert('Image XSS')>">Trigger Image XSS</a></li>
+        <li><a href="?xss=<iframe src=javascript:alert('iframe XSS')></iframe>">Trigger iframe XSS</a></li>
+    </ul>
+</body>
+</html>
