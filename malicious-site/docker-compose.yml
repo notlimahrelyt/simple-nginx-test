@@ -5,6 +5,13 @@ services:
     volumes:
       - ./index.html:/usr/share/nginx/html/index.html
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./eicar.com:/usr/share/nginx/html/eicar.com
+      - ./shellcode.js:/usr/share/nginx/html/shellcode.js
+      - ./backdoor.php:/usr/share/nginx/html/backdoor.php
+      - ./sql-injection.js:/usr/share/nginx/html/sql-injection.js
+      - ./malware-simulation.js:/usr/share/nginx/html/malware-simulation.js
+      - ./command-injection.js:/usr/share/nginx/html/command-injection.js
+      - ./directory-traversal.js:/usr/share/nginx/html/directory-traversal.js
       - ./key.pem:/root/ssl/key.pem
       - ./cert.pem:/root/ssl/cert.pem
     ports:
