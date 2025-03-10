@@ -1,50 +1,58 @@
 # Simple NGINX Test with Docker-Compose
+
+> **DISCLAIMER: This is for testing and development purposes only. NOT FOR PRODUCTION USE.**
+
 This is a very simple NGINX web server using Docker with a self-signed certificate. The idea behind this repo was a very quick and portable way to test out load balancing on Ubuntu Server instances.
 
+For native instructions without using Docker, please see the [Native System Install](#native-system-install) section at the bottom of this README.
+
 ## Prerequisites
+- [Install Docker and Docker Compose](#installing-docker-and-docker-compose)
+- [Clone the repo](#cloning-the-repo)
+- [Generate a Self Signed SSL Certificate](#generating-self-signed-ssl-certificates)
+- [Using the Containers](#using-the-containers)
+
+If you prefer not to use Docker, see the [Native System Install](#native-system-install) section.
 
 ### Installing Docker and Docker Compose
+Official Docker documentation: [Instructions](https://docs.docker.com/engine/install/ubuntu/)
 
-Before running this project, you'll need to install Docker and Docker Compose on your Ubuntu system.
+Before running this project, you'll need to install Docker and Docker Compose on your system.
 
-If you don't want to use Docker, use the instructions below for a native system install.
-
-#### For Ubuntu Server:
-
-1. Install Docker Engine:
+1. Run the following command to uninstall all conflicting packages.
 ```bash
-# Uninstall old versions (if any)
 sudo apt-get remove docker docker-engine docker.io containerd runc
-
-# Update the apt package index
+```
+2. Add Docker's official GPG key:
+```bash
 sudo apt-get update
-
-# Install prerequisites
-sudo apt-get install -y ca-certificates curl gnupg
-
-# Add Docker's official GPG key
+sudo apt-get install ca-certificates curl
 sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-# Set up the repository
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+```
+3. Add the repository to Apt sources
+```bash
 echo \
-  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-# Update the apt package index again
 sudo apt-get update
-
-# Install Docker Engine, containerd, and Docker Compose
+```
+4. Install Docker Engine, containerd, and Docker Compose
+```bash
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-# Add your user to the docker group to run Docker without sudo
+```
+5. Add your user to the docker group to run Docker without sudo
+```bash
 sudo usermod -aG docker $USER
-# Log out and log back in for this to take effect
+```
+6. Log out and log back in for this to take effect
+```bash
+exit
 ```
 
-2. Docker Compose is now included as a Docker plugin and can be used with:
+7. Verify Docker Compose installation:
 ```bash
 docker compose version
 ```
@@ -57,7 +65,16 @@ docker --version
 docker compose --version
 ```
 
-## Setting Up the NGINX Server
+## Cloning the Repo
+
+```bash
+git clone https://github.com/notlimahrelyt/simple-nginx-test.git
+cd simple-nginx-test
+```
+
+## Generating Self Signed SSL Certificates
+
+Make sure you're in the project directory before generating certificates:
 
 ### 1. Create a Self-Signed Certificate
 ```bash
@@ -68,25 +85,28 @@ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 
 When prompted, enter appropriate information for your self-signed certificate. For local testing, the defaults are generally acceptable.
 
-### 2. Start the NGINX Server
+## Using the Containers
+### 1. Start the Web Server
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
+
+Note: Both `docker-compose` and `docker compose` commands may work depending on your Docker version. The newer `docker compose` syntax (with a space) is recommended.
 
 This command will:
 - Pull the NGINX Docker image if it's not already available locally
 - Create and start the container with the configuration specified in the docker-compose.yml file
 - Run the container in detached mode (-d flag) so it runs in the background
 
-### 3. Access the Website
+### 2. Access the Website
 - HTTP (redirects to HTTPS): http://localhost
 - HTTPS: https://localhost
 
-Note: Since you're using a self-signed certificate, your browser will show a security warning. This is expected and can be bypassed for local testing.
+Note: Since you're using a self-signed certificate, your browser will show a security warning. This is expected and can be bypassed for local testing. In most browsers, you can proceed by clicking "Advanced" and then "Proceed to localhost (unsafe)".
 
-### 4. Stop the Server
+### 3. Stop the Web Server
 ```bash
-docker-compose down
+docker compose down
 ```
 
 ## Project Structure
@@ -97,12 +117,13 @@ docker-compose down
 
 ## Troubleshooting
 - If ports 80 or 443 are already in use, modify the port mappings in the docker-compose.yml file.
-- Ensure that Docker is running before executing docker-compose commands.
-- If you encounter permission issues creating the certificates, try running the commands without sudo (on macOS) or use an administrator command prompt (on Windows).
+- Ensure that Docker is running before executing Docker commands.
+- If you encounter permission issues creating the certificates, try running the commands without sudo.
+- If you see "Permission denied" errors when running Docker commands, make sure you've properly added your user to the docker group and have logged out and back in.
 
 # Native System Install
 
-If you prefer not to use Docker, you can install NGINX directly on your Ubuntu Server:
+If you prefer not to use Docker, you can install NGINX directly on your Ubuntu Server. This approach may be simpler for users who are not familiar with containers:
 
 1. **Install NGINX**:
    ```bash
@@ -159,8 +180,9 @@ If you prefer not to use Docker, you can install NGINX directly on your Ubuntu S
 5. **Copy the Website Content**:
    ```bash
    # Copy index.html to the web root
-   sudo cp /path/to/repo/index.html /var/www/html/
+   sudo cp /path/to/simple-nginx-test/index.html /var/www/html/
    ```
+   Note: Replace `/path/to/simple-nginx-test` with the actual path to where you cloned the repository.
 
 6. **Test NGINX Configuration**:
    ```bash
@@ -193,4 +215,14 @@ If you prefer not to use Docker, you can install NGINX directly on your Ubuntu S
 - **Port conflicts**: If ports 80 or 443 are already in use, you may need to change them in the NGINX configuration.
 - **Permission issues**: Make sure you have proper permissions to write to the configuration directories.
 - **Certificate errors**: Ensure the paths to your SSL certificates are correct in the NGINX configuration.
-- **Service doesn't start**: Check the NGINX error logs for more information.
+- **Service doesn't start**: Check the NGINX error logs for more information:
+  ```bash
+  sudo journalctl -u nginx.service
+  # or
+  sudo cat /var/log/nginx/error.log
+  ```
+- **Default site conflict**: If the default NGINX site is interfering, disable it:
+  ```bash
+  sudo rm /etc/nginx/sites-enabled/default
+  sudo systemctl reload nginx
+  ```
