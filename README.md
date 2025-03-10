@@ -83,7 +83,7 @@ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -out ./cert.pem
 ```
 
-When prompted, enter appropriate information for your self-signed certificate. For local testing, the defaults are generally acceptable.
+When prompted, enter appropriate information for your self-signed certificate. For the "Common Name" field, it's best to use your server's IP address or domain name that you'll be using to access the site, rather than "localhost".
 
 ## Using the Containers
 ### 1. Start the Web Server
@@ -99,10 +99,16 @@ This command will:
 - Run the container in detached mode (-d flag) so it runs in the background
 
 ### 2. Access the Website
-- HTTP (redirects to HTTPS): http://localhost
-- HTTPS: https://localhost
+- HTTP (redirects to HTTPS): http://SERVER_IP
+- HTTPS: https://SERVER_IP
 
-Note: Since you're using a self-signed certificate, your browser will show a security warning. This is expected and can be bypassed for local testing. In most browsers, you can proceed by clicking "Advanced" and then "Proceed to localhost (unsafe)".
+Replace `SERVER_IP` with the actual IP address of your Ubuntu Server.
+
+For example:
+- HTTP: http://192.168.1.100 or http://ec2-xxx-xxx-xxx-xxx.compute-1.amazonaws.com
+- HTTPS: https://192.168.1.100 or https://ec2-xxx-xxx-xxx-xxx.compute-1.amazonaws.com
+
+Note: Since you're using a self-signed certificate, your browser will show a security warning. This is expected and can be bypassed for local testing. In most browsers, you can proceed by clicking "Advanced" and then "Proceed to site (unsafe)".
 
 ### 3. Stop the Web Server
 ```bash
@@ -139,6 +145,8 @@ If you prefer not to use Docker, you can install NGINX directly on your Ubuntu S
      -keyout /etc/nginx/ssl/key.pem \
      -out /etc/nginx/ssl/cert.pem
    ```
+   
+   When prompted for the "Common Name", enter your server's IP address or domain name, not "localhost".
 
 3. **Configure NGINX**:
    Create a new site configuration:
@@ -147,11 +155,11 @@ If you prefer not to use Docker, you can install NGINX directly on your Ubuntu S
    ```
    
    Paste the following configuration:
-   ```
+```
    server { 
        listen                  443 ssl;
        listen                  [::]:443 ssl;
-       server_name             localhost;
+       server_name             YOUR_SERVER_IP;   # Replace with your server's IP or domain
        ssl_certificate         /etc/nginx/ssl/cert.pem;
        ssl_certificate_key     /etc/nginx/ssl/key.pem;
 
@@ -166,11 +174,13 @@ If you prefer not to use Docker, you can install NGINX directly on your Ubuntu S
        listen 80;
        listen [::]:80;
 
-       server_name localhost;
+       server_name             YOUR_SERVER_IP;   # Replace with your server's IP or domain
 
        return 302 https://$server_name$request_uri;
    }
-   ```
+```
+
+**Note**: Be sure to replace `YOUR_SERVER_IP` with your actual server IP address or domain name in both server blocks.
 
 4. **Create a Symbolic Link to Enable the Site**:
    ```bash
@@ -195,8 +205,10 @@ If you prefer not to use Docker, you can install NGINX directly on your Ubuntu S
    ```
 
 8. **Access the Website**:
-   - HTTP (redirects to HTTPS): http://localhost
-   - HTTPS: https://localhost
+   - HTTP (redirects to HTTPS): http://SERVER_IP
+   - HTTPS: https://SERVER_IP
+
+   Replace `SERVER_IP` with the actual IP address of your Ubuntu Server (e.g., 192.168.1.100 or ec2-xxx-xxx-xxx-xxx.compute-1.amazonaws.com).
 
 9. **Control NGINX Service**:
    ```bash
