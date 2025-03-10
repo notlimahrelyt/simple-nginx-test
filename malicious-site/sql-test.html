@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SQL Injection Test Page</title>
+</head>
+<body>
+    <h1>SQL Injection Test Page</h1>
+    
+    <p>This page contains multiple SQL injection vectors that should trigger Palo Alto's threat detection.</p>
+    
+    <h2>SQL Injection Test Links</h2>
+    <ul>
+        <li><a href="/user/1' OR '1'='1">Basic SQL Injection Test</a></li>
+        <li><a href="/user/1'; DROP TABLE users; --">DROP TABLE Injection Test</a></li>
+        <li><a href="/user/1' UNION SELECT username, password FROM users; --">UNION SELECT Injection Test</a></li>
+        <li><a href="/user/1' AND (SELECT 1 FROM (SELECT COUNT(*), CONCAT(VERSION(), FLOOR(RAND(0)*2)) AS x FROM information_schema.tables GROUP BY x) y); --">Error-based Injection Test</a></li>
+        <li><a href="/user/1'; exec xp_cmdshell('dir'); --">xp_cmdshell Injection Test</a></li>
+        <li><a href="/user/1' OR 1=1 --">Simple OR Injection Test</a></li>
+        <li><a href="/user/1' AND 1=0 UNION ALL SELECT 'admin', '81dc9bdb52d04dc20036dbd8313ed055' --">UNION Authentication Bypass Test</a></li>
+    </ul>
+    
+    <h2>SQL Injection Test Form</h2>
+    <form action="javascript:void(0);" onsubmit="simulateSqlInjection(this)">
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" value="admin' --">
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" value="' OR '1'='1">
+        </div>
+        <div>
+            <label for="user_id">User ID:</label>
+            <input type="text" id="user_id" name="user_id" value="1'; DROP TABLE users; --">
+        </div>
+        <button type="submit">Submit SQL Injection</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <script>
+        function simulateSqlInjection(form) {
+            var username = form.username.value;
+            var password = form.password.value;
+            var userId = form.user_id.value;
+            
+            // Generate SQL injection payloads
+            var payloads = [
+                "SELECT * FROM users WHERE username = '" + username + "' AND password = '" + password + "'",
+                "SELECT * FROM users WHERE id = " + userId,
+                "INSERT INTO login_attempts (username, password, ip) VALUES ('" + username + "', '" + password + "', '127.0.0.1')"
+            ];
+            
+            // Display simulated SQL queries
+            var result = document.getElementById('result');
+            result.innerHTML = '<h3>Simulated SQL Queries:</h3>';
+            
+            for (var i = 0; i < payloads.length; i++) {
+                result.innerHTML += '<div class="query"><pre>' + payloads[i] + '</pre></div>';
+            }
+            
+            // Send to backend (simulated)
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/user/' + userId, true);
+            xhr.send();
+        }
+    </script>
+</body>
+</html>
